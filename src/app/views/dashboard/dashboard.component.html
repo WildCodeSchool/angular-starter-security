@@ -1,0 +1,3 @@
+<p *ngFor="let product of products | async">
+  {{product.name}} : {{product.price | currency:'symbol':'EUR'}}
+</p>
