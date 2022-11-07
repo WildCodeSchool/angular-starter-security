@@ -1,5 +1,5 @@
-import { ParsedToken } from './../dto/parsed-token';
-import { LoginResponse } from './../dto/login-response';
+import { ParsedToken } from '../interfaces/parsed-token';
+import { LoginResponse } from '../interfaces/login-response';
 import { AuthService } from './../services/auth.service';
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
@@ -18,8 +18,7 @@ export class AuthGuard implements CanActivate {
       const token = sessionStorage.getItem('token');
       const refreshToken = sessionStorage.getItem('refreshToken');
       if (!token || !refreshToken) {
-        this.router.navigate(['login']);
-        return false;
+        return this.router.createUrlTree(['/login']);
       }
       const parseToken: ParsedToken = jwt_decode(token);
       const isExpired = parseToken.exp > new Date();

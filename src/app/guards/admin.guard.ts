@@ -2,7 +2,7 @@ import jwt_decode from 'jwt-decode';
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
-import { ParsedToken } from '../dto/parsed-token';
+import { ParsedToken } from '../interfaces/parsed-token';
 
 @Injectable({
   providedIn: 'root'
@@ -16,9 +16,6 @@ export class AdminGuard implements CanActivate {
     if (parsedToken.roles.includes('ROLE_ADMIN')) {
       return true;
     }
-
     return false;
-
   }
-
 }

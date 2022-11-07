@@ -13,10 +13,9 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor() {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    console.log(request.method);
-    if (request.url.includes('auth') || !sessionStorage.getItem('token') || request.method === 'OPTIONS') {
+    if (request.url.includes('auth') || !sessionStorage.getItem('token')) {
       return next.handle(request);
     }
-    return next.handle(request.clone({ setHeaders: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token')}}));
+    return next.handle(request.clone({ setHeaders: { Authorization: 'Bearer ' + sessionStorage.getItem('token')}}));
   }
 }

@@ -1,4 +1,4 @@
-import { LoginResponse } from './../../dto/login-response';
+import { LoginResponse } from '../../interfaces/login-response';
 import { AuthService } from './../../services/auth.service';
 import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
