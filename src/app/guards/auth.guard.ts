@@ -17,9 +17,17 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
       const token = sessionStorage.getItem('token');
       const refreshToken = sessionStorage.getItem('refreshToken');
+      console.log(route.url[0]);
+
       if (!token || !refreshToken) {
+        if (route.url[0].toString() === 'login' || route.url[0].toString() === 'register')
+          return true;
         return this.router.createUrlTree(['/login']);
       }
+
+      if (route.url[0].toString() === 'login' || route.url[0].toString() === 'register')
+        return this.router.createUrlTree(['/dashboard']);
+
       const parseToken: ParsedToken = jwt_decode(token);
       const isExpired = parseToken.exp > new Date();
       if (isExpired) {
