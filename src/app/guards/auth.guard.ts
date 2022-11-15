@@ -17,7 +17,6 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
       const token = sessionStorage.getItem('token');
       const refreshToken = sessionStorage.getItem('refreshToken');
-      console.log(route.url[0]);
 
       if (!token || !refreshToken) {
         if (route.url[0].toString() === 'login' || route.url[0].toString() === 'register')

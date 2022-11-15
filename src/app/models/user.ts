@@ -1,10 +1,11 @@
-import { Role } from './../interfaces/role';
+import { SafeUrl } from "@angular/platform-browser";
+
 export class User {
-  public isAdmin!: boolean;
+  public profilePictureSafeUrl!: SafeUrl;
 
   constructor(
     public id: number,
     public email: string,
-    public roles: Role[]
+    public profilePicture: Blob
   ) {}
 }

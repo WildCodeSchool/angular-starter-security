@@ -15,21 +15,27 @@ import jwt_decode from "jwt-decode";
 })
 export class AuthService {
 
-  public currentUser: Subject<User | undefined>;
+  public currentUser: BehaviorSubject<User | undefined>;
 
   constructor(private http: HttpClient,
     private userService: UserService,
     private router: Router) {
     const token = sessionStorage.getItem('token');
-    this.currentUser = new Subject();
+    this.currentUser = new BehaviorSubject<User | undefined>(undefined);
     if (token) {
-      this.userService.getConnectedUser().subscribe(
-        (user: User) => {
-          this.currentUser.next(user);
-        }
-      );
+      this.setCurrentUser();
     }
    }
+
+  public setCurrentUser(): void {
+    this.userService.getConnectedUser().subscribe(
+      (user: User) => {
+        if (this.currentUser != null)
+          this.currentUser.next(user);
+        this.currentUser = new BehaviorSubject<User | undefined>(user);
+      }
+    );
+  }
 
   public register(register: RegisterRequest): Observable<object> {
     return this.http.post(environment.urlApi + 'auth/signup', register);
@@ -38,6 +44,12 @@ export class AuthService {
   public setTokenToSession(token: string, refreshToken: string): void {
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('refreshToken', refreshToken);
+  }
+
+  public isAdmin(): boolean {
+    const parsedToken: ParsedToken = jwt_decode(<string> sessionStorage.getItem('token'));
+
+    return parsedToken.roles.includes('ROLE_ADMIN');
   }
 
   public signIn(login: {email: string, password: string}): Observable<LoginResponse> {

@@ -1,5 +1,5 @@
-<p>ID : {{ (user | async)?.id }} | {{ (user | async)?.email }}</p>
-<a *ngIf="(user | async)?.isAdmin" routerLink="/admin">Admin</a>
+<p>ID : {{ (user | async)?.id }} | {{ (user | async)?.email }} <img [src]="(user | async)?.profilePictureSafeUrl"/></p>
+<a *ngIf="isAdmin" routerLink="/admin">Admin</a>
 <button (click)="logout()">Se déconnecter</button>
 <p *ngFor="let product of products | async">
   {{product.name}} : {{product.price | currency:'symbol':'EUR'}}

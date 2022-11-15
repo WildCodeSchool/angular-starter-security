@@ -11,6 +11,7 @@ import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms'
 })
 export class LoginComponent implements OnInit {
   public form: FormGroup;
+
   constructor(private fb: FormBuilder,
     private router: Router,
     private authService: AuthService) {
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit {
         this.authService.signIn(this.form.getRawValue()).subscribe(
           (response: LoginResponse) => {
             this.authService.setTokenToSession(response.accessToken, response.refreshToken);
+            this.authService.setCurrentUser();
             this.router.navigate(['dashboard']);
           }
           )
