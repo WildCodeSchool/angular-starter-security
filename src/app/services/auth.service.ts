@@ -3,12 +3,12 @@ import { RegisterRequest } from './../interfaces/register-request';
 import { ParsedToken } from '../interfaces/parsed-token';
 import { environment } from './../../environments/environment';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { LoginResponse } from '../interfaces/login-response';
 import { User } from '../models/user';
-import { UserService } from './user.service';
 import jwt_decode from "jwt-decode";
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Injectable({
   providedIn: 'root'
@@ -18,53 +18,66 @@ export class AuthService {
   public currentUser: BehaviorSubject<User | undefined>;
 
   constructor(private http: HttpClient,
-    private userService: UserService,
+    private sanitizer: DomSanitizer,
     private router: Router) {
-    const token = sessionStorage.getItem('token');
-    this.currentUser = new BehaviorSubject<User | undefined>(undefined);
-    if (token) {
-      this.setCurrentUser();
-    }
-   }
-
-  public setCurrentUser(): void {
-    this.userService.getConnectedUser().subscribe(
-      (user: User) => {
-        if (this.currentUser != null)
-          this.currentUser.next(user);
-        this.currentUser = new BehaviorSubject<User | undefined>(user);
+      const token = sessionStorage.getItem('token');
+      this.currentUser = new BehaviorSubject<User | undefined>(undefined);
+      if (token) {
+        this.setCurrentUser();
       }
-    );
-  }
+    }
 
-  public register(register: RegisterRequest): Observable<object> {
-    return this.http.post(environment.urlApi + 'auth/signup', register);
-  }
+    public setCurrentUser(user?: User): void {
+      if (user) {
+        this.currentUser.next(user);
+        return;
+      }
+      this.http.get<User>(environment.urlApi + 'users/me').pipe(
+        map((user: User) => {
+          user.profilePictureSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl('data:'
+          + user.profilePicture);
+          return user;
+        })
+      ).subscribe(
+        (user: User) => {
+          this.currentUser.next(user);
+        });
+      }
 
-  public setTokenToSession(token: string, refreshToken: string): void {
-    sessionStorage.setItem('token', token);
-    sessionStorage.setItem('refreshToken', refreshToken);
-  }
+      public register(register: RegisterRequest): Observable<object> {
+        return this.http.post(environment.urlApi + 'auth/signup', register);
+      }
 
-  public isAdmin(): boolean {
-    const parsedToken: ParsedToken = jwt_decode(<string> sessionStorage.getItem('token'));
+      public setTokenToSession(token: string, refreshToken: string): void {
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('refreshToken', refreshToken);
+      }
 
-    return parsedToken.roles.includes('ROLE_ADMIN');
-  }
+      public isAdmin(): boolean {
+        const parsedToken: ParsedToken = jwt_decode(<string> sessionStorage.getItem('token'));
 
-  public signIn(login: {email: string, password: string}): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(environment.urlApi + 'auth/login', login);
-  }
+        return parsedToken.roles.includes('ROLE_ADMIN');
+      }
 
-  public refreshToken(): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(environment.urlApi + 'auth/refreshtoken', { 'refreshToken': sessionStorage.getItem('refreshToken')});
-  }
+      public signIn(login: {email: string, password: string}): Observable<LoginResponse> {
+        return this.http.post<LoginResponse>(environment.urlApi + 'auth/login', login);
+      }
 
-  public logout(): void {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('refreshToken');
-    this.currentUser.next(undefined);
-    this.router.navigate(['']);
-  }
+      public checkTokenValidity(): boolean {
+        const parsedToken: ParsedToken = jwt_decode(<string> sessionStorage.getItem('token'));
+        const isExpired = new Date(parsedToken.exp * 1000) < new Date();
+        return !isExpired;
+      }
 
-}
+      public refreshToken(): Observable<LoginResponse> {
+        return this.http.post<LoginResponse>(environment.urlApi + 'auth/refreshtoken',
+        { 'refreshToken': sessionStorage.getItem('refreshToken')});
+      }
+
+      public logout(): void {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('refreshToken');
+        this.currentUser.next(undefined);
+        this.router.navigate(['']);
+      }
+    }

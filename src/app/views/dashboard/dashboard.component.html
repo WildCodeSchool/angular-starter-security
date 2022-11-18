@@ -1,7 +1,16 @@
-<p>ID : {{ (user | async)?.id }} | {{ (user | async)?.email }} <img [src]="(user | async)?.profilePictureSafeUrl"/></p>
+<p>ID : {{ (user | async)?.id }} | {{ (user | async)?.email }} <img [src]="userProfilePicture | async"/></p>
 <a *ngIf="isAdmin" routerLink="/admin">Admin</a>
 <button (click)="logout()">Se déconnecter</button>
+
+<hr>
+
+<p>Changer la photo de profil</p>
+<label for="picture">Photo</label>
+<input type="file" id="picture" placeholder="Sélectionnez une photo" accept="image/*" (change)="onSubmitNewPicture($event)"/>
+<button [disabled]="!picture" (click)="sendPicture()" type="button">Envoyer</button>
+
+<hr>
+
 <p *ngFor="let product of products | async">
   {{product.name}} : {{product.price | currency:'symbol':'EUR'}}
 </p>
-
